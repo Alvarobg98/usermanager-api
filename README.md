@@ -28,7 +28,26 @@ La API se ejecutará inicialmente en:
 http://localhost:3000
 ```
 
+## Endpoints disponibles
+
+### Health
+
+```http
+GET /api/health
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": "ok",
+  "message": "UserManager API funcionando",
+  "timestamp": "2026-01-01T10:00:00.000Z"
+}
+```
+
 ## Documentación del reto
 
 - [Día 1 - Diseño inicial](docs/dia-01-diseno-inicial-usermanager.md)
 - [Día 2 - Preparación del proyecto](docs/dia-02-preparacion-proyecto.md)
+- [Día 3 - Primer endpoint](docs/dia-03-primer-endpoint.md)
