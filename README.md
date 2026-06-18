@@ -46,8 +46,22 @@ Respuesta esperada:
 }
 ```
 
+## Endpoints simulados de usuarios
+
+```http
+GET /api/users
+GET /api/users/:id
+POST /api/users
+PATCH /api/users/:id
+DELETE /api/users/:id
+```
+
+Estos endpoints todavía no trabajan con datos reales. De momento sirven para
+practicar métodos HTTP, rutas, parámetros y body.
+
 ## Documentación del reto
 
 - [Día 1 - Diseño inicial](docs/dia-01-diseno-inicial-usermanager.md)
 - [Día 2 - Preparación del proyecto](docs/dia-02-preparacion-proyecto.md)
 - [Día 3 - Primer endpoint](docs/dia-03-primer-endpoint.md)
+- [Día 3 - Métodos HTTP](docs/dia-04-metodos-http.md)
