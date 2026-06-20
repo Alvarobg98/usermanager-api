@@ -52,6 +52,32 @@ app.get("/api/users", (req, res) => {
     });
 });
 
+// Endpoint para simular busquedas
+app.get("/api/users/search", (req, res) => {
+    res.status(200).json({
+        "message": "Busqueda de usuarios",
+        "filters": req.query
+    });
+});
+
+// Endpoint que devuelve al usuario logeado
+app.get("/api/users/me", (req, res) => {
+    res.status(200).json({
+        "id": 1,
+        "name": "Usuario de prueba",
+        "email": "usuario@email.com",
+        "role": "USER",
+        "isActive": true
+    });
+});
+
+// Endpoint para cambiar la contraseña
+app.patch("/api/users/me/password", (req, res) => {
+    res.status(200).json({
+        "message": "Solicitud de cambio de contraseña recibida"
+    });
+});
+
 // Endpoint que devuelve un usuario por su id
 app.get("/api/users/:id", (req, res) => {
     const {id} = req.params;
@@ -94,17 +120,6 @@ app.delete("/api/users/:id", (req, res) => {
     });
 });
 
-// Endpoint que devuelve al usuario logeado
-app.get("/api/users/me", (req, res) => {
-    res.status(200).json({
-        "id": 1,
-        "name": "Usuario de prueba",
-        "email": "usuario@email.com",
-        "role": "USER",
-        "isActive": true
-    });
-});
-
 // Endpoint para activar/desactivar un usuario por su id
 app.patch("/api/users/:id/status", (req, res) => {
     const {id} = req.params;
@@ -126,6 +141,61 @@ app.patch("/api/users/:id/role", (req, res) => {
         "message": "Rol de usuario recibido para actualizar",
         "id": id,
         "role": role
+    });
+});
+
+// Endpoint para probar body
+app.post("/api/debug/body", (req, res) => {
+    res.status(201).json({
+        "message": "Body recibido correctamente",
+        "body": req.body
+    });
+});
+
+// Endpoint para probar params
+app.get("/api/debug/params/:id", (req, res) => {
+    res.status(200).json({
+        "message": "Params recibidos correctamente",
+        "params": req.params
+    });
+});
+
+// Endpoint para probar query params
+app.get("/api/debug/query", (req, res) => {
+    res.status(200).json({
+        "message": "Query params recibidos correctamente",
+        "query": req.query
+    });
+});
+
+// Endpoint para probar headers
+app.get("/api/debug/headers", (req, res) => {
+    res.status(200).json({
+        "message": "Headers recibidos correctamente",
+        "headers": req.headers
+    });
+});
+
+// Endpoint para probar datos combinados
+app.patch("/api/debug/users/:id", (req, res) => {
+    const {id} = req.params;
+    const {notify} = req.query;
+    const authorization = req.headers;
+    const changes = req.body;
+
+    res.status(200).json({
+        "message": "Datos combinados recibidos correctamente",
+        id,
+        notify,
+        authorization,
+        changes
+    });
+});
+
+// Endpoint para leer un header personalizado
+app.get("/api/debug/client", (req, res) => {
+    res.status(200).json({
+        "client": req.headers["x-client-name"]
     });
 });
 
