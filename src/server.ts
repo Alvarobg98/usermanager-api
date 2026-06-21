@@ -4,6 +4,65 @@ import { timeStamp } from "node:console";
 const app = express();
 const PORT = 3000;
 
+type User = {
+    id: number,
+    name: string,
+    email: string,
+    role: "USER" | "ADMIN",
+    isActive: boolean,
+    createdAt: string,
+    updatedAt: string
+};
+
+// Datos temporales en memoria, se sustituirán más adelante por una BBDD
+const users: User[] = [
+  {
+    id: 1,
+    name: "Ana García",
+    email: "ana@email.com",
+    role: "USER",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    name: "Carlos Pérez",
+    email: "carlos@email.com",
+    role: "ADMIN",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 3,
+    name: "Laura Martínez",
+    email: "laura@email.com",
+    role: "USER",
+    isActive: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 4,
+    name: "Alvaro Barranco",
+    email: "alvaro@email.com",
+    role: "USER",
+    isActive: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 5,
+    name: "Elena Medina",
+    email: "elena@email.com",
+    role: "USER",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 app.use(express.json());
 
 // Endpoint raiz de la API
@@ -48,7 +107,8 @@ app.get("/api/ping", (req, res) => {
 app.get("/api/users", (req, res) => {
     res.status(200).json({
         "message": "Listado de usuarios",
-        "data": []
+        "total": users.length,
+        "data": users
     });
 });
 
@@ -78,6 +138,13 @@ app.patch("/api/users/me/password", (req, res) => {
     });
 });
 
+// Endpoint para contar el número de usuarios almacenados
+app.get("/api/users/count", (req, res) => {
+    res.status(200).json({
+        "total": users.length
+    });
+});
+
 // Endpoint que devuelve un usuario por su id
 app.get("/api/users/:id", (req, res) => {
     const {id} = req.params;
@@ -93,7 +160,7 @@ app.post("/api/users", (req, res) => {
     const userData = req.body;
 
     console.log("Body recibido en Post /api/users:", userData);
-    
+
     res.status(201).json({
         "message": "Usuario recibido para crear",
         "data": userData
