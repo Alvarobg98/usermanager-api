@@ -21,7 +21,7 @@ const users: User[] = [
     name: "Ana García",
     email: "ana@email.com",
     role: "USER",
-    isActive: true,
+    isActive: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -30,7 +30,7 @@ const users: User[] = [
     name: "Carlos Pérez",
     email: "carlos@email.com",
     role: "ADMIN",
-    isActive: true,
+    isActive: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -57,7 +57,7 @@ const users: User[] = [
     name: "Elena Medina",
     email: "elena@email.com",
     role: "USER",
-    isActive: true,
+    isActive: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
@@ -145,13 +145,46 @@ app.get("/api/users/count", (req, res) => {
     });
 });
 
+// Endpoint que devuelve los usuarios activos
+app.get("/api/users/active", (req, res) => {
+    const activeUsers = users.filter((user) => user.isActive);
+
+    if (activeUsers.length === 0) {
+        res.status(404).json({
+            "error": "No hay usuarios activos"
+        });
+    } else {
+        res.status(200).json({
+            "message": "Usuarios activos",
+            "total": activeUsers.length,
+            "activeUsers": activeUsers
+        });
+    }
+})
+
 // Endpoint que devuelve un usuario por su id
 app.get("/api/users/:id", (req, res) => {
-    const {id} = req.params;
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+        return res.status(400).json({
+            "message": "El ID debe ser un número",
+            "received": req.params.id
+        });
+    }
+
+    const user = users.find((user) => user.id === id);
+
+    if (!user) {
+        return res.status(404).json({
+            "error": "Usuario no encontrado",
+            id
+        });
+    }
 
     res.status(200).json({
-        "message": "Detalle del usuario",
-        "id": id
+        "message": "Usuario encontrado",
+        "data": user
     });
 });
 
