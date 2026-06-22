@@ -190,13 +190,54 @@ app.get("/api/users/:id", (req, res) => {
 
 // Endpoint para crear un usuario
 app.post("/api/users", (req, res) => {
-    const userData = req.body;
+    const {name, email, password} = req.body;
 
-    console.log("Body recibido en Post /api/users:", userData);
+    if (!name || !email || !password) {
+        return res.status(400).json({
+            "error": "name, email y password son obligatorios"
+        });
+    }
+
+    if (String(password).length < 6) {
+        return res.status(400).json({
+            "error": "la contraseña debe tener 6 caracteres mínimo"
+        });
+    }
+
+    const cleanName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = users.find((user) => user.email === normalizedEmail);
+
+    if (!normalizedEmail.includes("@")) {
+        return res.status(400).json({
+            "error": "El email no tiene un formato válido"
+        });
+    }
+
+    if (existingUser) {
+        return res.status(409).json({
+            "error": "ya existe un usuario con ese email"
+        });
+    }
+
+    const newId = users.length > 0 ? Math.max(...users.map((user) => user.id)) + 1 : 1;
+
+    const newUser : User = {
+        id: newId,
+        name: cleanName,
+        email: normalizedEmail,
+        role: "USER",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
 
     res.status(201).json({
         "message": "Usuario recibido para crear",
-        "data": userData
+        "data": newUser
     });
 });
 
