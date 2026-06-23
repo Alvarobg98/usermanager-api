@@ -241,15 +241,137 @@ app.post("/api/users", (req, res) => {
     });
 });
 
-// Endpoint para actualizar los datos de un usuario por su id
-app.patch("/api/users/:id", (req, res) => {
-    const {id} = req.params;
-    const dataChanges = req.body;
+// Endpoint para activar/desactivar un usuario por su id
+app.patch("/api/users/:id/status", (req, res) => {
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+        return res.status(400).json({
+            "error": "El ID debe ser numérico"
+        });
+    }
+
+    const existingUser = users.findIndex((user) => user.id === id);
+
+    if (existingUser === -1) {
+        return res.status(400).json({
+            "error": "El usuario no existe",
+            id
+        });
+    }
+
+    const {isActive} = req.body;
+
+    if (typeof isActive !== "boolean") {
+        return res.status(400).json({
+            "error": "isActive debe ser true o false"
+        });
+    }
+
+    users[existingUser].isActive = isActive;
 
     res.status(200).json({
-        "message:": "Usuario recibido para modificar",
+        "message": "Estado de usuario recibido para actualizar",
         "id": id,
-        "changes": dataChanges
+        "isActive": isActive
+    });
+});
+
+// Endpoint para actualizar los datos de un usuario por su id
+app.patch("/api/users/:id", (req, res) => {
+    const idParam = req.params.id;
+    const idNorm = Number(idParam);
+
+    if (Number.isNaN(idNorm)) {
+        return res.status(400).json({
+            "error": "El ID debe ser numérico"
+        });
+    }
+
+    const userIndex = users.findIndex((user) => user.id === idNorm);
+
+    if (userIndex === -1) {
+        return res.status(404).json({
+            "error": "Usuario no encontrado",
+            idNorm
+        });
+    }
+
+    const {id, name, email, isActive, role} = req.body;
+
+    if (id) {
+        return res.status(400).json({
+            "error": "No se puede cambiar el ID"
+        });
+    }
+
+    if (role) {
+        return res.status(400).json({
+            "error": "No se puede cambiar el rol desde esta ruta"
+        });
+    }
+
+    const hasChanges = name !== undefined || email !== undefined || isActive !== undefined;
+
+    if (!hasChanges) {
+        res.status(400).json({
+            "error": "Debes completar al menos 1 campo para actualizar"
+        });
+    }
+
+    let cleanEmail: string | undefined;
+
+    if (email !== undefined) {
+        cleanEmail = String(email).trim().toLowerCase();
+
+        if (!cleanEmail.includes("@")) {
+            return res.status(400).json({
+                "error": "El email no tiene un formato válido"
+            });
+        }
+
+        const existingEmail = users.find((user) => user.email === cleanEmail && user.id !== idNorm);
+
+        if (existingEmail) {
+            return res.status(409).json({
+                "error": "El email ya está registrado"
+            });
+        }
+    }
+
+    let cleanName: string | undefined;
+
+    if (name !== undefined) {
+        cleanName = String(name).trim();
+
+        if (cleanName.length === 0) {
+            return res.status(400).json({
+                "error": "El nombre no puede estar vacío"
+            });
+        }
+    }
+
+    if (isActive !== undefined && typeof isActive !== "boolean") {
+        return res.status(400).json({
+            "error": "isActive debe ser true o false"
+        });
+    }
+
+    const currentUser = users[userIndex];
+
+    const updatedUser: User = {
+        ...currentUser,
+        name: cleanName ?? currentUser.name,
+        email: cleanEmail ?? currentUser.email,
+        isActive: isActive ?? currentUser.isActive,
+        updatedAt: new Date().toISOString()
+    };
+
+    users[userIndex] = updatedUser;
+
+    res.status(200).json({
+        "message": "Usuario actualizado correctamente",
+        "data": updatedUser
     });
 });
 
@@ -260,18 +382,6 @@ app.delete("/api/users/:id", (req, res) => {
     res.status(200).json({
         "message": "Usuario recibido para eliminar o desactivar",
         "id": id
-    });
-});
-
-// Endpoint para activar/desactivar un usuario por su id
-app.patch("/api/users/:id/status", (req, res) => {
-    const {id} = req.params;
-    const isActive = req.body;
-
-    res.status(200).json({
-        "message": "Estado de usuario recibido para actualizar",
-        "id": id,
-        "isActive": isActive
     });
 });
 
