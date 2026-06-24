@@ -21,7 +21,7 @@ const users: User[] = [
     name: "Ana García",
     email: "ana@email.com",
     role: "USER",
-    isActive: false,
+    isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -30,7 +30,7 @@ const users: User[] = [
     name: "Carlos Pérez",
     email: "carlos@email.com",
     role: "ADMIN",
-    isActive: false,
+    isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -48,7 +48,7 @@ const users: User[] = [
     name: "Alvaro Barranco",
     email: "alvaro@email.com",
     role: "USER",
-    isActive: false,
+    isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -158,6 +158,23 @@ app.get("/api/users/active", (req, res) => {
             "message": "Usuarios activos",
             "total": activeUsers.length,
             "activeUsers": activeUsers
+        });
+    }
+})
+
+// Endpoint que devuelve los usuarios activos
+app.get("/api/users/inactive", (req, res) => {
+    const inactiveUsers = users.filter((user) => !user.isActive);
+
+    if (inactiveUsers.length === 0) {
+        res.status(404).json({
+            "error": "No hay usuarios activos"
+        });
+    } else {
+        res.status(200).json({
+            "message": "Usuarios inactivos",
+            "total": inactiveUsers.length,
+            "activeUsers": inactiveUsers
         });
     }
 })
@@ -277,6 +294,48 @@ app.patch("/api/users/:id/status", (req, res) => {
     });
 });
 
+// Endpoint para reactivar un usuario por su id
+app.patch("/api/users/:id/reactivate", (req, res) => {
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+        return res.status(400).json({
+            "error": "El ID debe ser numérico"
+        });
+    }
+
+    const existingUser = users.findIndex((user) => user.id === id);
+    
+    if (existingUser === -1) {
+        return res.status(404).json({
+            "error": "El usuario no existe",
+            id
+        });
+    }
+
+    const currentUser = users[existingUser];
+
+    if (currentUser.isActive === true) {
+        return res.status(200).json({
+            "message": "El usuario ya estaba activado",
+            "data": currentUser
+        });
+    }
+
+    const updatedUser : User = {
+        ...currentUser,
+        isActive: true,
+        updatedAt: new Date().toISOString()
+    };
+
+    users[existingUser] = updatedUser;
+
+    res.status(200).json({
+        "message": "Usuario reactivado correctamente",
+        "data": updatedUser
+    });
+});
+
 // Endpoint para actualizar los datos de un usuario por su id
 app.patch("/api/users/:id", (req, res) => {
     const idParam = req.params.id;
@@ -377,11 +436,43 @@ app.patch("/api/users/:id", (req, res) => {
 
 // Endpoint para eliminar/desactivar un usuario por su id
 app.delete("/api/users/:id", (req, res) => {
-    const {id} = req.params;
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+        return res.status(400).json({
+            "error": "El ID debe ser numérico"
+        });
+    }
+
+    const existingUser = users.findIndex((user) => user.id === id);
     
+    if (existingUser === -1) {
+        return res.status(404).json({
+            "error": "El usuario no existe",
+            id
+        });
+    }
+
+    const currentUser = users[existingUser];
+
+    if (currentUser.isActive === false) {
+        return res.status(200).json({
+            "message": "El usuario ya estaba desactivado",
+            "data": currentUser
+        });
+    }
+
+    const updatedUser : User = {
+        ...currentUser,
+        isActive: false,
+        updatedAt: new Date().toISOString()
+    };
+
+    users[existingUser] = updatedUser;
+
     res.status(200).json({
-        "message": "Usuario recibido para eliminar o desactivar",
-        "id": id
+        "message": "Usuario desactivado correctamente",
+        "data": updatedUser
     });
 });
 
