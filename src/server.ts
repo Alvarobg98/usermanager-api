@@ -71,8 +71,20 @@ function isBoolean(value: unknown): value is boolean {
     return typeof value === "boolean";
 }
 
+function normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+}
+
 function isValidBasicEmail(value: string): boolean {
-    return value.includes("@") && value.includes(".");
+    return value.includes("@") && value.includes(".") && !value.startsWith("@") && !value.endsWith("@");
+}
+
+function isEmailTaken(email: string, userIdToIgnore?: number): boolean {
+    const normalizedEmail = normalizeEmail(email);
+
+    return users.some(
+        (user) => user.email === normalizedEmail && user.id !== userIdToIgnore
+    );
 }
 
 function isValidName(value: string): boolean {
@@ -134,6 +146,23 @@ app.get("/api/users/search", (req, res) => {
         "message": "Busqueda de usuarios",
         "filters": req.query
     });
+});
+
+// Endpoint para buscar usuarios por su email
+app.get("/api/users/search/email", (req, res) => {
+    const {email} = req.query;
+    const existingUser = users.find((user) => user.email === email);
+
+    if (existingUser) {
+        res.status(200).json({
+            "message": "Usuario encontrado",
+            "data": existingUser
+        });
+    } else {
+        res.status(404).json({
+            "error": "Usuario no encontrado"
+        });
+    }
 });
 
 // Endpoint que devuelve al usuario logeado
@@ -244,7 +273,7 @@ app.post("/api/users", (req, res) => {
     }
 
     const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = normalizeEmail(email);
     const cleanPass = password.trim();
 
     if (!isValidName(cleanName)) {
@@ -265,9 +294,7 @@ app.post("/api/users", (req, res) => {
         });
     }
 
-    const existingUser = users.find((user) => user.email === cleanEmail);
-
-    if (existingUser) {
+    if (isEmailTaken(cleanEmail)) {
         return res.status(409).json({
             "error": "ya existe un usuario con ese email"
         });
@@ -422,7 +449,7 @@ app.patch("/api/users/:id", (req, res) => {
             });
         }
 
-        cleanEmail = String(email).trim().toLowerCase();
+        cleanEmail = normalizeEmail(email);
 
         if (!isValidBasicEmail(cleanEmail)) {
             return res.status(400).json({
@@ -430,9 +457,7 @@ app.patch("/api/users/:id", (req, res) => {
             });
         }
 
-        const existingEmail = users.find((user) => user.email === cleanEmail && user.id !== idNorm);
-
-        if (existingEmail) {
+        if (isEmailTaken(cleanEmail, idNorm)) {
             return res.status(409).json({
                 "error": "El email ya está registrado"
             });
